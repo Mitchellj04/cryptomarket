@@ -1,37 +1,59 @@
-import { AppBar, Grid, Toolbar, Typography } from '@mui/material'
+import { AppBar, Avatar, Box, Card, CardContent, CardHeader, CardMedia, Grid, Toolbar, Typography } from '@mui/material'
 import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import NavBar from './NavBar'
+import { fetchMarketData } from './redux/MarketSlice'
+import millify from 'millify'
 
 const Home = () => {
 
-    const options = {
-        method: 'GET',
-        headers: {
-            'X-RapidAPI-Key': 'c031e95be0msh3d15e454f05c4aap165355jsn168a1ce49640',
-            'X-RapidAPI-Host': 'coinranking1.p.rapidapi.com'
-        }
-    };
-    
-    useEffect(() => {
-           fetch('https://coinranking1.p.rapidapi.com/coins?referenceCurrencyUuid=yhjMzLPhuIDl&timePeriod=24h&tiers%5B0%5D=1&orderBy=marketCap&orderDirection=desc&limit=50&offset=0', options)
-        .then(response => response.json())
-        .then(response => console.log(response))
-        .catch(err => console.error(err));
+    // REDUX STATE
+    const dispatch = useDispatch()
+    const marketData = useSelector((state) => state.market.data)
+    const allCoins = useSelector((state) => state.market.coins)
+   
+    const topTen = allCoins.slice(0, 10)
+
+    console.log(marketData)
+    console.log(topTen)
+
+    const showTop = topTen.map((coin) => {
+        return <>
+        <Grid item xs={3} style={{margin: 20}}>
+            <Card hoverable>
+                <Typography>{coin.rank}.</Typography>
+                <CardHeader title={coin.name} avatar={<Avatar src={coin.iconUrl}></Avatar>}/>
+                <CardContent>
+                    <Typography>Symbol: {coin.symbol}</Typography>
+                    <Typography>Price: ${millify(coin.price)}</Typography>
+                    <Typography>Change: {millify(coin.change)}%</Typography>
+                </CardContent>
+            </Card>
+            </Grid>
+        </>
     })
-  return (
-    <>
-    <Grid container> 
-    <Typography variant='h4'>Crypto Stats</Typography>
-       <Grid item xs={8}>
+    useEffect(() => {
+        dispatch(fetchMarketData())
+    }, [])
 
-           
-
-
-       </Grid>
-    </Grid>
-
-    </>
-  )
+    return (
+        <>
+            <Typography variant='h4'>Crypto Stats</Typography>
+            <Grid container>
+                <Grid item xs={4}>Total Currencies: {millify(marketData.totalCoins)}</Grid>
+                <Grid item xs={4}>Total Exchanges: {millify(marketData.totalExchanges)}</Grid>
+                <Grid item xs={4}>Total Market Cap: {millify(marketData.totalMarketCap)}</Grid>
+                <Grid item xs={4}>Total 24h Volume: {millify(marketData.total24hVolume)}</Grid>
+                <Grid item xs={4}>Total Markets {millify(marketData.totalMarkets)}</Grid>
+            </Grid>
+            <Box>
+                <Typography variant='h4'>Leading Currencies</Typography>
+                <Grid container>
+                {showTop}
+                </Grid>
+            </Box>
+        </>
+    )
 }
 
 export default Home
