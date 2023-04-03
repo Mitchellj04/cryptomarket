@@ -27,10 +27,17 @@ export const fetchAllData = createAsyncThunk('market/fetchAllData', () => {
 
 })
 
+export const fetchCoinData = createAsyncThunk('coin/fetchCoinData', (uuid) => {
+    return fetch(`https://coinranking1.p.rapidapi.com/coin/${uuid}?referenceCurrencyUuid=yhjMzLPhuIDl`, options)
+	.then(response => response.json())
+	.then((data) => data)
+	.catch(err => console.error(err));
+})
+
 const initialState = {
     data: [],
     coins: [],
-    newest: [],
+    coin: [],
     status: []
 }
 
@@ -50,6 +57,9 @@ const marketSlice = createSlice({
                 state.status = action.payload.status
                 state.coins = action.payload.data.coins
                 // state.newest = action.payload.data.newestCoins
+            })
+            .addCase(fetchCoinData.fulfilled, (state, action) => {
+                state.coin = [action.payload]
             })
     }
 })
